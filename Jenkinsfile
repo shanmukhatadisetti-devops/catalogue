@@ -3,11 +3,13 @@ pipeline{
         label 'agent-1'
     }
     environment{
-        appVersion = ""
         REGION = "us-east-1"
         ACC_ID = "430774481266"
         PROJECT= "roboshop"
         COMPONENT = "catalogue"
+        IMAGE_TAG = ""
+        PR_NUMBER = "${env.CHANGE_ID}"
+        NAMESPACE = "pr-${env.CHANGE_ID}"
     }
     options{
         timeout(time: 30, unit: 'MINUTES')
@@ -15,15 +17,15 @@ pipeline{
         ansiColor('xterm')
     }
     stages{
-        stage('Read Json Version'){
-            steps{
-                script{
-                    def packageJSON = readJSON file: 'package.json'
-                    appVersion = packageJSON.version
-                    echo "appVersion:${appVersion}"
+        stage('Set Variables') {
+            steps {
+                script {
+                    IMAGE_TAG = sh(
+                        script: "git rev-parse --short HEAD",
+                        returnStdout: true
+                    ).trim()
                 }
             }
-
         }
         stage('Install Dependencies'){
             steps{
@@ -40,14 +42,23 @@ pipeline{
                     withAWS(credentials: 'aws-cred', region: 'us-east-1') {
                         sh """
                             aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com
-                            docker build -t ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${appVersion} .
-                            docker push ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${appVersion}
+                            docker build -t ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${IMAGE_TAG} .
+                            docker push ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${IMAGE_TAG}
                         """
                     }
 
                 }
             }
         }
+        // stage('Trigger CD') {
+        //     steps {
+        //         build job: 'catalogue-preview-deploy',
+        //         parameters: [
+        //         string(name: 'IMAGE_TAG', value: IMAGE_TAG),
+        //         string(name: 'PR_NUMBER', value: PR_NUMBER)
+        //         ]
+        //     }
+        // }
     }
     post{
         always{
