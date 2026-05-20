@@ -29,6 +29,7 @@ pipeline{
                         script: "git rev-parse --short HEAD",
                         returnStdout: true
                     ).trim()
+                    echo "env.IMAGE_TAG"
                 }
             }
         }
