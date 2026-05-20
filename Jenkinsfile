@@ -17,6 +17,11 @@ pipeline{
         ansiColor('xterm')
     }
     stages{
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
         stage('Set Variables') {
             steps {
                 script {
