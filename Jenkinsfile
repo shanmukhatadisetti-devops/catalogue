@@ -20,7 +20,7 @@ pipeline{
         stage('Set Variables') {
             steps {
                 script {
-                    IMAGE_TAG = sh(
+                    env.IMAGE_TAG = sh(
                         script: "git rev-parse --short HEAD",
                         returnStdout: true
                     ).trim()
@@ -28,6 +28,9 @@ pipeline{
             }
         }
         stage('Install Dependencies'){
+             when {
+                 expression { env.CHANGE_ID == null }
+            }
             steps{
                 script{
                     sh"""
@@ -37,6 +40,9 @@ pipeline{
             }
         }
         stage('Docker Build'){
+            when {
+                 expression { env.CHANGE_ID == null }
+            }
             steps{
                 script{
                     withAWS(credentials: 'aws-cred', region: 'us-east-1') {
@@ -50,15 +56,27 @@ pipeline{
                 }
             }
         }
-        // stage('Trigger CD') {
-        //     steps {
-        //         build job: 'catalogue-preview-deploy',
-        //         parameters: [
-        //         string(name: 'IMAGE_TAG', value: IMAGE_TAG),
-        //         string(name: 'PR_NUMBER', value: PR_NUMBER)
-        //         ]
-        //     }
-        // }
+        stage('Trigger CD') {
+
+            when {
+                expression { env.CHANGE_ID != null }
+            }
+
+            steps {
+
+                build(
+                    job: '../catalogue-cd',
+                    parameters: [
+                        string(name: 'PR_NUMBER', value: env.CHANGE_ID),
+                        string(name:  'IMAGE_TAG', value: env.IMAGE_TAG),
+                        string(name:  'NAMESPACE', value: env.NAMESPACE)
+                    ],
+                    wait: false,
+                    propagate: false
+                )
+            }
+        }
+
     }
     post{
         always{
