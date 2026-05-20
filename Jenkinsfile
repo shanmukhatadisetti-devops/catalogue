@@ -51,7 +51,7 @@ pipeline{
                             docker build -t ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${IMAGE_TAG} .
                             docker push ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${IMAGE_TAG}
                         """
-                    } 
+                    }
 
                 }
             }
