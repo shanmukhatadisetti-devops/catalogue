@@ -33,10 +33,11 @@ pipeline{
         stage('Set Variables') {
             steps {
                 script {
+                    sh"""
+                        env.IMAGE_TAG = env.GIT_COMMIT.take(7)
 
-                    env.IMAGE_TAG = env.GIT_COMMIT.take(7)
-
-                    echo "IMAGE_TAG = ${env.IMAGE_TAG}"
+                        echo "IMAGE_TAG = ${env.IMAGE_TAG}"
+                    """
         
                 }
             }
