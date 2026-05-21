@@ -22,6 +22,14 @@ pipeline{
                 checkout scm
             }
         }
+        stage('Debug Git') {
+            steps {
+                sh '''
+                echo "GIT_COMMIT=$GIT_COMMIT"
+                git log -1 --oneline || true
+                '''
+            }
+        }
         stage('Set Variables') {
             steps {
                 script {
