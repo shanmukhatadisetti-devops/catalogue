@@ -7,7 +7,6 @@ pipeline{
         ACC_ID = "430774481266"
         PROJECT= "roboshop"
         COMPONENT = "catalogue"
-        IMAGE_TAG = ""
         PR_NUMBER = "${env.CHANGE_ID}"
         NAMESPACE = "pr-${env.CHANGE_ID}"
     }
