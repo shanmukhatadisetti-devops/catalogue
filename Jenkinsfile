@@ -33,13 +33,7 @@ pipeline{
         stage('Set Variables') {
             steps {
                 script {
-                    def tag = sh(
-                        script: "git rev-parse --short HEAD",
-                        returnStdout: true
-                    ).trim()
-
-                    env.IMAGE_TAG = tag
-
+                    env.IMAGE_TAG = env.GIT_COMMIT.take(7)
                     echo "IMAGE_TAG = ${env.IMAGE_TAG}"
                 
         
